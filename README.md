@@ -1,8 +1,8 @@
 # MFR (Modular File Renderer)
 
-`master` Build Status: [![Build Status](https://travis-ci.com/RCOSDP/RDM-modular-file-renderer.svg?branch=master)](https://travis-ci.com/RCOSDP/RDM-modular-file-renderer)
+`master` Build Status: [![Build Status](https://travis-ci.org/RCOSDP/RDM-modular-file-renderer.svg?branch=master)](https://travis-ci.org/RCOSDP/RDM-modular-file-renderer)
 
-`develop` Build Status: [![Build Status](https://travis-ci.com/RCOSDP/RDM-modular-file-renderer.svg?branch=develop)](https://travis-ci.com/RCOSDP/RDM-modular-file-renderer)
+`develop` Build Status: [![Build Status](https://travis-ci.org/RCOSDP/RDM-modular-file-renderer.svg?branch=develop)](https://travis-ci.org/RCOSDP/RDM-modular-file-renderer)
 
 [![Coverage Status](https://coveralls.io/repos/github/RCOSDP/RDM-modular-file-renderer/badge.svg)](https://coveralls.io/github/RCOSDP/RDM-modular-file-renderer)
 
