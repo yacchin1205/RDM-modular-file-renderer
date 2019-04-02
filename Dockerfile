@@ -32,14 +32,13 @@ RUN usermod -d /home www-data \
         gnupg2 \
     # gosu
     && export GOSU_VERSION='1.10' \
-    && for key in \
-      # GOSU
-      B42F6819007F00F88E364FD4036A9C25BF357DD4 \
+    && mkdir ~/.gnupg && chmod 600 ~/.gnupg && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf \
+    && for server in hkp://ipv4.pool.sks-keyservers.net:80 \
+                     hkp://ha.pool.sks-keyservers.net:80 \
+                     hkp://pgp.mit.edu:80 \
+                     hkp://keyserver.pgp.com:80 \
     ; do \
-      gpg --keyserver hkp://ipv4.pool.sks-keyservers.net:80 --recv-keys "$key" || \
-      gpg --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-keys "$key" || \
-      gpg --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" || \
-      gpg --keyserver hkp://keyserver.pgp.com:80 --recv-keys "$key" \
+      gpg --keyserver "$server" --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && break || echo "Trying new server..." \
     ; done \
     && curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
   	&& curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
@@ -62,7 +61,13 @@ ENV LIBREOFFICE_ARCHIVE LibreOffice_6.0.1.1_Linux_x86-64_deb.tar.gz
 RUN apt-get update \
     && apt-get install -y \
         curl \
-    && gpg --keyserver pool.sks-keyservers.net --recv-keys AFEEAEA3 \
+    && for server in hkp://ipv4.pool.sks-keyservers.net:80 \
+                     hkp://ha.pool.sks-keyservers.net:80 \
+                     hkp://pgp.mit.edu:80 \
+                     hkp://keyserver.pgp.com:80 \
+    ; do \
+      gpg --keyserver "$server" --recv-keys AFEEAEA3 && break || echo "Trying new server..." \
+    ; done \
     && curl -SL "https://downloadarchive.documentfoundation.org/libreoffice/old/$LIBREOFFICE_VERSION/deb/x86_64/$LIBREOFFICE_ARCHIVE" -o $LIBREOFFICE_ARCHIVE \
     && curl -SL "https://downloadarchive.documentfoundation.org/libreoffice/old/$LIBREOFFICE_VERSION/deb/x86_64/$LIBREOFFICE_ARCHIVE.asc" -o $LIBREOFFICE_ARCHIVE.asc \
     && gpg --verify "$LIBREOFFICE_ARCHIVE.asc" \
