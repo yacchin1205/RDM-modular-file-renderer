@@ -2,6 +2,24 @@
 ChangeLog
 *********
 
+20.0.0 (2020-07-01)
+===================
+- Happy Canada Day, everyone!
+- Feature: Stop preloading videos in MFR to save bandwidth/memory.  Instead display a static poster
+with the COS logo. (thanks ro @allsey87 for the suggestion and thanks to @Johnetordoff for the
+alley-oop!)
+
+19.1.0 (2019-09-25)
+===================
+- Feature: Update MFR's Dockerfile to be based off of Debian Buster and install LibreOffice via
+apt-get.  It had been pulling down a LibreOffice .deb from LO's archive, but they only make the most
+recent patch version available.  This meant that the Dockerfile had to be update with every patch
+release.  The version in Debian Buster is v6.1.5.
+
+19.0.2 (2019-06-21)
+===================
+- Fix: Update MFR dependencies on jinja and mistune python libraries.
+
 19.0.1 (2019-06-20)
 ===================
 - Fix: Update Dockerfile to install LibreOffice v6.1.6.  v6.1.5 is no longer available from their
