@@ -2,6 +2,7 @@ import os
 import abc
 import uuid
 import asyncio
+import logging
 import pkg_resources
 
 import tornado.web
@@ -30,6 +31,8 @@ CORS_EXPOSE_HEADERS = [
     'Content-Length',
     'Content-Encoding',
 ]
+
+logger = logging.getLogger(__name__)
 
 
 class CorsMixin:
@@ -110,15 +113,18 @@ class BaseHandler(CorsMixin, tornado.web.RequestHandler, SentryMixin):
                 provider=settings.PROVIDER_NAME,
                 code=400,
             )
+        logging.debug('target_url::{}'.format(self.url))
 
         self.provider = utils.make_provider(
             settings.PROVIDER_NAME,
             self.request,
-            self.url
+            self.url,
+            action=self.NAME,
         )
 
         self.metadata = await self.provider.metadata()
         self.extension_metrics.add('ext', self.metadata.ext)
+        logging.debug('extension::{}'.format(self.metadata.ext))
 
         self.cache_provider = waterbutler.core.utils.make_provider(
             settings.CACHE_PROVIDER_NAME,
@@ -203,8 +209,10 @@ class BaseHandler(CorsMixin, tornado.web.RequestHandler, SentryMixin):
                         list(value.args))
                 tornado.web.gen_log.warning(format, *args)
         else:
-            tornado.web.app_log.error("Uncaught exception %s\n", self._request_summary(),
-                                       exc_info=(typ, value, tb))
+            tornado.web.app_log.error("[User-Agent: %s] Uncaught exception %s\n",
+                                      self.request.headers.get('User-Agent', '*none found*'),
+                                      self._request_summary(),
+                                      exc_info=(typ, value, tb))
 
     def on_finish(self):
         if self.request.method not in self.ALLOWED_METHODS:

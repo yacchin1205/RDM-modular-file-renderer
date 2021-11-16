@@ -3,12 +3,9 @@ import json
 import logging
 
 import aiohttp
-# from geoip import geolite2
 
-import mfr
 from mfr.server import settings
-
-# import waterbutler
+from mfr.version import __version__
 from waterbutler.core.utils import async_retry
 
 
@@ -22,8 +19,7 @@ async def log_analytics(request, metrics, is_error=False):
 
     keen_payload = copy.deepcopy(metrics)
     keen_payload['meta'] = {
-        'mfr_version': mfr.__version__,
-        # 'wb_version': waterbutler.__version__,
+        'mfr_version': __version__,
         'epoch': 1,
     }
     keen_payload.update(request)
@@ -39,7 +35,8 @@ async def log_analytics(request, metrics, is_error=False):
             {  # private
                 'name': 'keen:ip_to_geo',
                 'input': {
-                    'ip': 'tech.ip'
+                    'ip': 'tech.ip',
+                    'remove_ip_property': True,
                 },
                 'output': 'geo',
             },
@@ -182,7 +179,7 @@ def _build_public_file_payload(action, request, file_metadata):
         'request': {
             'url': request['request']['url']
         },
-        'anon': {
+        'anon': {  # intended for anonymized geolocation, never implemented
             'country': None,
             'continent': None,
         },

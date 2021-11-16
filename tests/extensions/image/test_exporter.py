@@ -35,7 +35,8 @@ class TestImageExporter:
         output_file_path = os.path.join(directory, 'test.{}'.format(settings.EXPORT_TYPE))
         format = '{}.{}'.format(settings.EXPORT_MAXIMUM_SIZE, settings.EXPORT_TYPE)
         exporter = ImageExporter(source_file_path=source_file_path, ext='.jpg',
-                                 output_file_path=output_file_path, format=format)
+                                 output_file_path=output_file_path, format=format,
+                                 metadata={})
 
         assert not os.path.exists(output_file_path)
 
@@ -64,7 +65,8 @@ class TestImageExporter:
         output_file_path = os.path.join(directory, 'test.{}'.format(settings.EXPORT_TYPE))
         format = '{}.{}'.format(settings.EXPORT_MAXIMUM_SIZE, settings.EXPORT_TYPE)
         exporter = ImageExporter(source_file_path=source_file_path, ext='.png',
-                                 output_file_path=output_file_path, format=format)
+                                 output_file_path=output_file_path, format=format,
+                                 metadata={})
 
         assert not os.path.exists(output_file_path)
 
@@ -98,7 +100,8 @@ class TestImageExporter:
         output_file_path = os.path.join(directory, 'test.{}'.format(settings.EXPORT_TYPE))
         format = '{}.{}'.format(settings.EXPORT_MAXIMUM_SIZE, settings.EXPORT_TYPE)
         exporter = ImageExporter(source_file_path=source_file_path, ext='.bmp',
-                                 output_file_path=output_file_path, format=format)
+                                 output_file_path=output_file_path, format=format,
+                                 metadata={})
 
         assert not os.path.exists(output_file_path)
 
@@ -119,11 +122,12 @@ class TestImageExporter:
         assert output_pixels[0] == (255, 254, 232)
 
     def test_ratio(self, directory):
-        source_file_path = os.path.join(BASE, 'files', 'test_ratio.png')
+        source_file_path = os.path.join(BASE, 'files', 'test_ratio.jpg')
         output_file_path = os.path.join(directory, 'test.{}'.format(settings.EXPORT_TYPE))
         format = '{}.{}'.format(settings.EXPORT_MAXIMUM_SIZE, settings.EXPORT_TYPE)
         exporter = ImageExporter(source_file_path=source_file_path, ext='.png',
-                                 output_file_path=output_file_path, format=format)
+                                 output_file_path=output_file_path, format=format,
+                                 metadata={})
 
         assert not os.path.exists(output_file_path)
 
@@ -135,7 +139,7 @@ class TestImageExporter:
         source_image = Image.open(source_file_path)
 
         assert output_image.mode == 'RGB'
-        assert output_image.size == (1200, 1029)
+        assert output_image.size == (2400, 1600)
         assert output_image.palette == source_image.palette
         assert output_image.format.lower() == settings.EXPORT_TYPE
 
@@ -146,7 +150,8 @@ class TestImageExporter:
                                         'test.{}'.format(settings.EXPORT_TYPE))
         format = '{}.{}'.format(settings.EXPORT_MAXIMUM_SIZE, settings.EXPORT_TYPE)
         exporter = ImageExporter(source_file_path=source_file_path, ext='.jpg',
-                                 output_file_path=output_file_path, format=format)
+                                 output_file_path=output_file_path, format=format,
+                                 metadata={})
 
         assert not os.path.exists(output_file_path)
         with pytest.raises(exceptions.PillowImageError) as e:
@@ -159,7 +164,8 @@ class TestImageExporter:
         output_file_path = os.path.join(directory, 'test.{}'.format(settings.EXPORT_TYPE))
         format = '{}.{}'.format(settings.EXPORT_MAXIMUM_SIZE, settings.EXPORT_TYPE)
         exporter = ImageExporter(source_file_path=source_file_path, ext='.jpg',
-                                 output_file_path=output_file_path, format=format)
+                                 output_file_path=output_file_path, format=format,
+                                 metadata={})
 
         assert not os.path.exists(output_file_path)
         with pytest.raises(exceptions.PillowImageError) as e:

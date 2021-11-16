@@ -11,7 +11,7 @@ Release v\ |version|. (:ref:`Installation <install>`)
 Ready to dive in?
 -----------------
 
-Go to the :ref:`Quickstart tutorial <quickstart>`, check out some :ref:`examples <examples>` for code, or see the :ref:`Overview <overview>` to understand its architecture.
+Go to the :ref:`Quickstart tutorial <quickstart>`, or see the :ref:`Overview <overview>` to understand its architecture.
 
 
 
@@ -23,8 +23,8 @@ Guide
 
    install
    quickstart
-   examples
    overview
+   integrations
    code
 
 Project info

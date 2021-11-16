@@ -37,6 +37,15 @@ http://sourceforge.net/adobe/cmap/wiki/License/
 
     <script src="debugger.js"></script>
     <script src="viewer.js"></script>
+
+    % if enable_hypothesis:
+    <style>
+      body.show-hypothesis .annotator-frame {
+        margin-top: 32px;
+      }
+    </style>
+    % endif
+
   </head>
 
   <body tabindex="1" class="loadingInProgress">
@@ -413,6 +422,18 @@ http://sourceforge.net/adobe/cmap/wiki/License/
         var DEFAULT_URL = '${url}';
         window.pymChild.sendMessage('embed', 'embed-responsive-pdf');
     </script>
+    % if enable_hypothesis:
+    <script>
+        window.MFR_STABLE_ID = '${stable_id}';
+        window.MFR_FILE_NAME = '${file_name}';
+        window.GA_TRACKING_ID = '${ga_tracking_id}';
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        ga('create', window.GA_TRACKING_ID, 'auto');
+    </script>
+    <script src="/static/js/mfr.child.hypothesis.js"></script>
+    % endif
   </body>
 </html>
-

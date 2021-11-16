@@ -29,12 +29,16 @@ class ExportHandler(core.BaseHandler):
                                     " appropriate extension")
         # TODO: do we need to catch exceptions for decoding?
         self.format = format[0].decode('utf-8')
+        self.exporter_name = utils.get_exporter_name(self.metadata.ext)
 
         self.cache_file_id = '{}.{}'.format(self.metadata.unique_key, self.format)
 
-        self.cache_file_path = await self.cache_provider.validate_path(
-            '/export/{}'.format(self.cache_file_id)
-        )
+        if self.exporter_name:
+            cache_file_path_str = '/export/{}.{}'.format(self.cache_file_id, self.exporter_name)
+        else:
+            cache_file_path_str = '/export/{}'.format(self.cache_file_id)
+        self.cache_file_path = await self.cache_provider.validate_path(cache_file_path_str)
+
         self.source_file_path = await self.local_cache_provider.validate_path(
             '/export/{}'.format(self.source_file_id)
         )
@@ -53,6 +57,13 @@ class ExportHandler(core.BaseHandler):
 
     async def get(self):
         """Export a file to the format specified via the associated extension library"""
+
+        # File is already in the requested format
+        if self.metadata.ext.lower() == ".{}".format(self.format.lower()):
+            await self.write_stream(await self.provider.download())
+            logger.info('Exported {} with no conversion.'.format(self.format))
+            self.metrics.add('export.conversion', 'noop')
+            return
 
         if settings.CACHE_ENABLED:
             try:
@@ -76,7 +87,8 @@ class ExportHandler(core.BaseHandler):
             self.metadata.ext,
             self.source_file_path.full_path,
             self.output_file_path.full_path,
-            self.format
+            self.format,
+            self.metadata,
         )
 
         self.extension_metrics.add('class', exporter._get_module_name())

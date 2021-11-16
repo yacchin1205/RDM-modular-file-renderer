@@ -2,6 +2,146 @@
 ChangeLog
 *********
 
+20.0.0 (2020-07-01)
+===================
+- Happy Canada Day, everyone!
+- Feature: Stop preloading videos in MFR to save bandwidth/memory.  Instead display a static poster
+with the COS logo. (thanks ro @allsey87 for the suggestion and thanks to @Johnetordoff for the
+alley-oop!)
+
+19.1.0 (2019-09-25)
+===================
+- Feature: Update MFR's Dockerfile to be based off of Debian Buster and install LibreOffice via
+apt-get.  It had been pulling down a LibreOffice .deb from LO's archive, but they only make the most
+recent patch version available.  This meant that the Dockerfile had to be update with every patch
+release.  The version in Debian Buster is v6.1.5.
+
+19.0.2 (2019-06-21)
+===================
+- Fix: Update MFR dependencies on jinja and mistune python libraries.
+
+19.0.1 (2019-06-20)
+===================
+- Fix: Update Dockerfile to install LibreOffice v6.1.6.  v6.1.5 is no longer available from their
+archive.
+
+19.0.0 (2019-06-19)
+===================
+- Fix: Add white background to transparent .gifs to improve zooming appearance.  The zooming code
+keeps a copy of the image behind the zoomed version to improve performance.  If the image is
+transparent the actual-size copy will be visible behind the zoomed version.  Making the background
+opaque hides the original.
+- Feature: Track when the hypothes.is sidebar is opened via Google Analytics.  (thanks, @adlius!)
+- Feature: Add timeouts to renderers that shell out to external processes for conversion.  If a
+conversion takes longer than the configured number of seconds, MFR will return an error message
+instead of waiting forever.  (thanks, @ExProbitasFiducia!)
+- Code: Remove Rackspace cache-management tasks.  MFR is now hosted on GoogleCloud, and these are no
+longer needed.  (thanks, @ExProbitasFiducia!)
+
+18.0.0 (2018-10-11)
+===================
+- UPDATE: MFR is now following the CalVer (https://calver.org/) versioning scheme to match the
+OSF.  All new versions will use the `YY.MINOR.MICRO` format.
+- Fix: Move Hypothes.is toolbar toggle button down, so that it doesn't block the pdf.js controls on
+tiny mobile screens.
+- Fix: Don't crash when the image exporter receives a misformatted dimensions argument.
+- Fix: Show informative errors to users when a tabular file rendering action fails.
+
+0.27.1 (2018-07-25)
+===================
+- Feature: Tell Keen analytics to strip ip on upload.
+
+0.27.0 (2018-07-19)
+===================
+- Feature: Support the Hypothes.is annotator toolbar on pdfs and files converted to pdf.  This is
+not enabled by default; see `docs/integrations.rst` for instructions on enabling it.  NB: the
+default urls, page titles, and document ids that hypothes.is gets from the rendered document when
+running in an MFR context are not very useful, so MFR will try to provide more appropriate values to
+the annotator.  These may not be valid for all use cases, please see the document mentioned
+above for details.  (h/t @jamescdavis for helping to debug a race condition in the loader!)
+- Code: Don't let pytest descend into node_modules/.  (thanks, @birdbrained!)
+
+0.26.0 (2018-06-22)
+===================
+- Feature: Teach MFR to identify itself when requesting metadata from WaterButler. This will allow
+WaterButler to signal to the OSF when a render or export request occurs, letting OSF tally better
+metrics on file views.
+- Feature: When asked to export a file in its current format, return the unmodified file instead of
+complaining about the extension not having a supported exporter.
+- Fix: Don't show scrollbars on videos. They should be entirely visible without scrolling.
+- Fix: Render .tif files when extension is capitalized.
+- Docs: Remove obsolete documentation, fix markup errors, and edit existing docs.
+
+0.25.11 (2018-06-08)
+====================
+- Fix: Percent-encode quote characters in urls to avoid breaking some renderers.
+
+0.25.10 (2018-06-06)
+====================
+- Fix: Brown-paper-bag release: actual change version in the code.
+
+0.25.9 (2018-06-05)
+===================
+- Code: Pin base docker image to python:3.5-slim-jessie.  3.5-slim was recently updated to Debian
+stretch, and MFR has not yet been verified to work on it.
+
+0.25.8 (2018-05-25)
+===================
+- Fix: Render paletted pngs by converting them to RGB before saving as jpeg.
+- Code: Fix flake errors unrelated to this hotfix that were causing CI failures.
+
+0.25.7 (2018-05-08)
+===================
+- Feature: Allow settings config variables from the environment via JSON strings.  (thanks,
+@icereval!)
+
+0.25.6 (2018-05-08)
+===================
+- Fix: Explictly declare google-auth dependency needed by WaterButler.
+
+0.25.5 (2018-04-25)
+===================
+- Fix: Upgrade WaterButler dependency to take advantage of the new Google Cloud Storage provider.
+
+0.25.4 (2018-04-06)
+===================
+- Fix: When no exporter exists for the given extension, throw the "No supported exporter" error,
+instead of the non-specific "Please try again later" error.  This fixes a regression introduced
+in v0.25.0.
+
+0.25.3 (2018-04-03)
+===================
+- Fix: Add a subprocess timeout to the unoconv exporter so MFR doesn't wait forever for a process
+that might not complete.
+- Feature: Add user-agent to tornado access logs to help identify spiders.
+
+0.25.2 (2018-03-29)
+===================
+- Fix: Release memory consumed during csv-rendering process and force a garbage-collect cycle to
+make it available for the next big render.
+- Fix: Re-enable rendering for csv files.
+
+0.25.1 (2018-03-29)
+===================
+- Fix: Temporarily disable rendering for csv files. csv continues to cause resource issues for MFR
+and so will be disabled until those are resolved in another hotfix.
+
+0.25.0 (2018-03-28)
+===================
+- Feature: Large files can now be zoomed!  Images are scaled to fit the window, but clicking on the
+image will show a higher-resolution version.  The mousewheel or two-finger drag will zoom in up to
+the maximum image size of 2400x2400px (increased from 1200x1200px).  The zoomed image can be panned
+around the display port by moving the mouse.
+- Feature: Refuse to render tabular files (.xls, .xlsx, .csv) larger than 10Mb. Rendering these
+files consumes a lot of memory and can crash MFR.
+- Feature: Cached files now have the renderer that generated them appended to their names.  This
+allows DevOps to do more targeted cache-cleaning after a feature release.
+- Fix: Make Libreoffice download mirror url configurable in the Dockerfile.  The current mirror
+was having difficulty serving requests for awhile.  This makes it easier to switch mirrors during
+times of trouble.  The official mirror is working again, and MFR will continue to use that.
+- Code: Update MFR to support setuptools versions greater than v30.4.0. MFR's `__version__`
+declaration has moved from `mfr.__init__` to `mfr.version`.  (thanks, @johnetordoff!)
+
 0.24.2 (2018-02-09)
 ===================
 - Fix: Update UNOCONV_BIN setting to reflect the default pip install path.

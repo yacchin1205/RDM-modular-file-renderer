@@ -30,8 +30,8 @@ class OsfProvider(provider.BaseProvider):
     UNNEEDED_URL_PARAMS = ('_', 'token', 'action', 'mode', 'displayName')
     NAME = 'osf'
 
-    def __init__(self, request, url):
-        super().__init__(request, url)
+    def __init__(self, request, url, action=None):
+        super().__init__(request, url, action)
         self.download_url = None
         self.headers = {}
 
@@ -59,6 +59,7 @@ class OsfProvider(provider.BaseProvider):
         differently.
         """
         download_url = await self._fetch_download_url()
+        logger.debug('download_url::{}'.format(download_url))
         if '/file?' in download_url:
             # URL is for WaterButler v0 API
             # TODO Remove this when API v0 is officially deprecated
@@ -69,7 +70,11 @@ class OsfProvider(provider.BaseProvider):
         else:
             # URL is for WaterButler v1 API
             self.metrics.add('metadata.wb_api', 'v1')
-            metadata_response = await self._make_request('HEAD', download_url)
+            metadata_response = await self._make_request(
+                'HEAD',
+                download_url,
+                headers=({settings.MFR_ACTION_HEADER: self.action} if self.action else None)
+            )
             response_code = metadata_response.status
             response_reason = metadata_response.reason
             response_headers = metadata_response.headers
@@ -118,8 +123,13 @@ class OsfProvider(provider.BaseProvider):
         for unneeded in OsfProvider.UNNEEDED_URL_PARAMS:
             cleaned_url.args.pop(unneeded, None)
         self.metrics.add('metadata.clean_url_args', str(cleaned_url))
-        unique_key = hashlib.sha256((metadata['data']['etag'] + cleaned_url.url).encode('utf-8')).hexdigest()
-        return provider.ProviderMetadata(name, ext, content_type, unique_key, download_url)
+        meta = metadata['data']
+        unique_key = hashlib.sha256((meta['etag'] + cleaned_url.url).encode('utf-8')).hexdigest()
+        stable_str = '/{}/{}{}'.format(meta['resource'], meta['provider'], meta['path'])
+        stable_id = hashlib.sha256(stable_str.encode('utf-8')).hexdigest()
+        logger.debug('stable_identifier: str({}) hash({})'.format(stable_str, stable_id))
+
+        return provider.ProviderMetadata(name, ext, content_type, unique_key, download_url, stable_id)
 
     async def download(self):
         """Download file from WaterButler, returning stream."""
@@ -143,7 +153,7 @@ class OsfProvider(provider.BaseProvider):
             response = await aiohttp.request('GET', response.headers['location'])
             self.metrics.add('download.saw_redirect', True)
 
-        return streams.ResponseStreamReader(response, unsizable=True)
+        return streams.ResponseStreamReader(response)
 
     async def _fetch_download_url(self):
         """Provider needs a WaterButler URL to download and get metadata.  If ``url`` is already
@@ -170,6 +180,7 @@ class OsfProvider(provider.BaseProvider):
                 )
                 await request.release()
 
+                logger.debug('osf-download-resolver: request.status::{}'.format(request.status))
                 if request.status != 302:
                     raise exceptions.MetadataError(
                         request.reason,

@@ -49,11 +49,27 @@ def flake(ctx):
 
 
 @task
-def test(ctx, verbose=False):
+def test(ctx, verbose=False, nocov=False, extension=None, path=None):
+    """Run full or customized tests for MFR.
+    :param ctx: the ``invoke`` context
+    :param verbose: the flag to increase verbosity
+    :param nocov: the flag to disable coverage
+    :param extension: limit the tests to the given extension only
+    :param path: limit the tests to the given path only
+    :return: None
+    """
     flake(ctx)
-    cmd = 'py.test --cov-report term-missing --cov mfr tests'
-    if verbose:
-        cmd += ' -v'
+    # `--extension=` and `--path=` are mutually exclusive options
+    assert not (extension and path)
+    if path:
+        path = '/{}'.format(path) if path else ''
+    elif extension:
+        path = '/extensions/{}/'.format(extension) if extension else ''
+    else:
+        path = ''
+    coverage = ' --cov-report term-missing --cov mfr' if not nocov else ''
+    verbose = '-v' if verbose else ''
+    cmd = 'py.test{} tests{} {}'.format(coverage, path, verbose)
     ctx.run(cmd, pty=True)
 
 
@@ -69,71 +85,3 @@ def server(ctx):
 
     from mfr.server.app import serve
     serve()
-
-@task
-def export_cache_clean(ctx, extension=''):
-    cache_clean('export/', extension)
-
-@task
-def render_cache_clean(ctx, extension=''):
-    cache_clean('render/', extension)
-
-def cache_clean(folder, extension):
-    # NOTE: Manually install gevent & pyrax, no need for it to be depenency just for this method.
-
-    from gevent import monkey
-    from gevent.pool import Pool
-    from gevent import Timeout
-
-    monkey.patch_all()
-
-    import six
-    import pyrax
-    import logging
-    from mfr.server import settings
-
-    # Monkey patch pyrax for python 3 compatibility.
-    def _add_details(self, info):
-        """
-        Takes the dict returned by the API call and sets the
-        corresponding attributes on the object.
-        """
-        for (key, val) in six.iteritems(info):
-            if six.PY2 and isinstance(key, six.text_type):
-                key = key.encode(pyrax.get_encoding())
-            elif isinstance(key, bytes):
-                key = key.decode("utf-8")
-            setattr(self, key, val)
-    pyrax.resource.BaseResource._add_details = _add_details
-
-    # WARNING: We are using provider specific functions to enumerate files to quickly
-    # purge the cache, which can contain hundreds of thousands of objects. Thus
-    # asserting the provider, we will need to update if we move providers.
-    assert settings.CACHE_PROVIDER_NAME == 'cloudfiles'
-
-    logging.captureWarnings(True)
-
-    pyrax.set_setting('identity_type', 'rackspace')
-    pyrax.set_setting('verify_ssl', True)
-    pyrax.set_credentials(settings.CACHE_PROVIDER_CREDENTIALS['username'], settings.CACHE_PROVIDER_CREDENTIALS['token'])
-
-    cf = pyrax.connect_to_cloudfiles(region=settings.CACHE_PROVIDER_CREDENTIALS['region'].upper(), public=True)
-    container = cf.get_container(settings.CACHE_PROVIDER_SETTINGS['container'])
-
-    def delete_object(obj):
-        # added timeout of 5 seconds just in case
-        with Timeout(5, False):
-            try:
-                print(obj)
-                obj.delete()
-            except Exception as ex:
-                print(ex)
-
-    pool = Pool(100)
-    objects = container.get_objects(prefix=folder, limit=5000, marker='')
-    while objects:
-        for obj in objects:
-            if obj.name.endswith(extension):
-                pool.spawn(delete_object, obj)
-        objects = container.get_objects(prefix=folder, limit=5000, marker=objects[-1].name)
-    pool.join()
