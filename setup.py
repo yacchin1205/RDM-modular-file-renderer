@@ -718,6 +718,7 @@ setup(
             '.dta = mfr.extensions.tabular:TabularRenderer',
             '.mat = mfr.extensions.tabular:TabularRenderer',
             '.sav = mfr.extensions.tabular:TabularRenderer',
+            '.h5 = mfr.extensions.tabular:TabularRenderer',
             #'.ods = mfr.extensions.tabular:TabularRenderer',
 
             # unoconv
@@ -814,6 +815,8 @@ setup(
 
             # Zip
             '.zip = mfr.extensions.zip:ZipRenderer'
+
+
         ]
     },
 )

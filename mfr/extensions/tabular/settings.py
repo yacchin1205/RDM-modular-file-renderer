@@ -18,6 +18,7 @@ LIBS = config.get_object('LIBS', {
     '.dta': [libs.dta_pandas],
     '.sav': [libs.sav_stdlib],
     '.mat': [libs.mat_h5py_scipy],
+    '.h5': [libs.mat_basic_h5py],
     # '.ods': [libs.ods_ezodf],
 })
 

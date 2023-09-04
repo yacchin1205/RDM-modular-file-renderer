@@ -1,3 +1,4 @@
+import logging
 from collections import OrderedDict
 
 import h5py
@@ -7,6 +8,9 @@ from mfr.extensions.tabular import exceptions as tabular_exceptions
 from mfr.extensions.tabular.utilities import data_population, header_population
 
 
+logger = logging.getLogger(__name__)
+
+
 def build_sheets(name, list_data, sheets):
     # add default header to fix rendering of some data formats
     header = [i for i in range(1, 1 + len(list_data[0]))]
@@ -14,6 +18,25 @@ def build_sheets(name, list_data, sheets):
     header = header_population(header)
     sheets[str(name)] = (header, values)
 
+def iter_datasets(prefix, data):
+    """Iterate all datasets from a HDF5 item.
+    :param prefix: A prefix for a sheet name
+    :param data: A HDF5 item. This is an instance of either h5py.Dataset or h5py.Group
+    :return: An iterator for all datasets
+    """
+    if isinstance(data, h5py.Dataset):
+        if data.value.shape == (1,):
+            return
+        yield (prefix + data.name, data)
+        return
+    if isinstance(data, h5py.Group):
+        for key, value in data.items():
+            yield from iter_datasets(prefix + key, value)
+        return
+    logger.warn('Unexpected item: path={prefix}, data={data}'.format(
+        prefix=prefix,
+        data=data,
+    ))
 
 def mat_v73(fp):
     """Read and convert a mat v7.3 file to JSON format using h5py
@@ -70,3 +93,21 @@ def mat_h5py_scipy(fp):
         return mat_v7(fp)
     except NotImplementedError:
         return mat_v73(fp)
+
+def mat_basic_h5py(fp):
+    """Read a HDF5 file using h5py.
+    :param fp: File pointer object
+    :return: sheets for TabularRenderer
+    """
+    workbook = h5py.File(fp.name, 'r')
+    sheets = OrderedDict()
+
+    for var in workbook.items():
+        name = var[0]
+        data = var[1]
+        for dataset_name, dataset in iter_datasets(name, data):
+            logger.info('HDF5 dataset: {name}, {data}'.format(name=dataset_name, data=dataset.value))
+            list_data = dataset.value.tolist()
+            build_sheets(dataset_name.replace('/', '_'), list_data, sheets)
+
+    return sheets

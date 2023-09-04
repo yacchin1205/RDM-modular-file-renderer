@@ -39,3 +39,7 @@ def xlsx_xlrd():
 def mat_h5py_scipy():
     from ..libs.h5py_scipy_tools import mat_h5py_scipy
     return mat_h5py_scipy
+
+def mat_basic_h5py():
+    from ..libs.h5py_scipy_tools import mat_basic_h5py
+    return mat_basic_h5py
