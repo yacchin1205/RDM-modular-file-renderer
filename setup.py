@@ -140,6 +140,8 @@ setup(
             '.xlt = mfr.extensions.unoconv:UnoconvExporter',
             # '.xml = mfr.extensions.unoconv:UnoconvExporter',
             '.xpm = mfr.extensions.unoconv:UnoconvExporter',
+            # HDF5
+            '.h5 = mfr.extensions.hdf5:HDF5Exporter',
         ],
         'mfr.renderers': [
             # audio
@@ -813,7 +815,11 @@ setup(
             '.jasp = mfr.extensions.jasp:JASPRenderer',
 
             # Zip
-            '.zip = mfr.extensions.zip:ZipRenderer'
+            '.zip = mfr.extensions.zip:ZipRenderer',
+
+            # HDF5
+            '.h5 = mfr.extensions.hdf5:HDF5Renderer',
+
         ]
     },
 )
