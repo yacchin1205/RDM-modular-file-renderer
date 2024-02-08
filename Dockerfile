@@ -3,6 +3,15 @@ FROM python:3.5-slim-buster
 # ensure unoconv can locate the uno library
 ENV PYTHONPATH /usr/lib/python3/dist-packages
 
+# force installing jre due to different issues regarding to java runtime environment \
+# setup issues (see: https://stackoverflow.com/q/76872534/12171959)
+RUN set -x \
+    # Workaround for https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=863199#23 \
+    && mkdir -p /usr/share/man/man1 \
+    && apt-get update \
+    && apt-get install openjdk-11-jre-headless -y \
+    && apt-get clean
+
 RUN usermod -d /home www-data \
     && chown www-data:www-data /home \
     # -slim images strip man dirs, but java won't install unless this dir exists.
@@ -37,10 +46,12 @@ RUN usermod -d /home www-data \
     # gosu
     && export GOSU_VERSION='1.10' \
     && mkdir ~/.gnupg && chmod 600 ~/.gnupg && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf \
-    && for server in hkp://ipv4.pool.sks-keyservers.net:80 \
-                     hkp://ha.pool.sks-keyservers.net:80 \
-                     hkp://pgp.mit.edu:80 \
-                     hkp://keyserver.pgp.com:80 \
+    && for server in \
+              ha.pool.sks-keyservers.net \
+              hkp://p80.pool.sks-keyservers.net:80 \
+              keyserver.ubuntu.com \
+              hkp://keyserver.ubuntu.com:80 \
+              pgp.mit.edu \
     ; do \
       gpg --keyserver "$server" --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 && break || echo "Trying new server..." \
     ; done \
