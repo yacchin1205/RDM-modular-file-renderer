@@ -12,16 +12,11 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 
 read -r -d '' container_script <<'BASH' || true
-export WHEELHOUSE=$HOME/wheelhouse
-pip install --upgrade pip
-pip install setuptools==37.0.0
-pip install wheel==0.26.0
-pip install invoke==0.13.0
-invoke wheelhouse --develop
-invoke install --develop
-invoke test
+set -euo pipefail
+poetry install --without=docs --with=dev
+poetry run invoke test
 BASH
 
-docker run --rm -t \
+docker run --rm \
     -e TEST_BUILD="$TEST_BUILD" \
-    ${MFR_TEST_IMAGE} bash -lc "$container_script"
+    "${MFR_TEST_IMAGE}" bash -lc "$container_script"
