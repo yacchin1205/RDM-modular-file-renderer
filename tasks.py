@@ -92,7 +92,7 @@ def newrelic_server(ctx, config='newrelic.ini', verbose=False):
         sys.exit("Couldn't find config file '{}'.  Check path or run `invoke newrelic_init` "
                  "to generate it.".format(config))
 
-    cmd = f'poetry run env NEW_RELIC_CONFIG_FILE={config} newrelic-admin run-program invoke server'
+    cmd = f'env NEW_RELIC_CONFIG_FILE={config} newrelic-admin run-program invoke server'
     if verbose:
         print(cmd)
     ctx.run(cmd, pty=True)
